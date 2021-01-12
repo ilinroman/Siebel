@@ -1,1 +1,47 @@
+// ********************************************************************************
+// Описание: 
+//     <текст описания, дата, номер задачи в jira/дефект/os>
+// Аргументы:  <список входящих аргументов>
+// Возвращает: <список возвращаемых аргументов>
+// Автор(ы): Ильин Роман (rilin@vtb.ru)
+// Компания: ВТБ
+// ********************************************************************************
 
+/**
+ * Пример квери БК
+ */
+var oBC:BusComp = TheApplication().ActiveBusObject().GetBusComp("Contact");
+with(oBC)
+{
+	SetViewMode(AllView);
+	ActivateField("Last Name");
+	ClearToQuery();
+	SetSearchSpec("Id",sConId);
+	ExecuteQuery(ForwardOnly);
+	if(FirstRecord())
+	{...}
+}
+oBC = null;
+
+/** 
+ * Правило использования общих профайл атрибутов 
+ */
+var sAdminMode = TheApplication().GetProfileAttr("VTB24 Admin Mode Flag"); 
+TheApplication().SetProfileAttr("VTB24 Admin Mode Flag", "Y") 
+...
+TheApplication().SetProfileAttr("VTB24 Admin Mode Flag", sAdminMode)
+
+/**
+ * Обращение к родителю
+ */
+//проверки существования родителя
+var BC_parent = this.ParentBusComp()
+if (BC_parent != null)
+{
+  ...
+}
+//проверки корректности родителя
+if (BC_parent.Name() == "some name")
+{
+  ...
+}
