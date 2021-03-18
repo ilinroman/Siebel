@@ -1,0 +1,12 @@
+--Изменение проекта на репозиторном объекте
+update --siebel.s_applet a
+       --siebel.s_busobj a
+       --siebel.s_service a
+       siebel.s_buscomp a
+   set a.project_id =
+       (select row_id
+          from siebel.S_PROJECT p
+         where p.name = &<name="Имя проекта в кавычках" default="'My Project Name'">
+           and p.repository_id = (select row_id from siebel.s_repository where name = 'Siebel Repository'))
+where a.repository_id = (select row_id from siebel.s_repository where name = 'Siebel Repository')
+   and a.name in (&"Список объектов в кавычках через ','");
