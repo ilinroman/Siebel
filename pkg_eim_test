@@ -1,0 +1,153 @@
+CREATE OR REPLACE PACKAGE SIEBEL.pkg_eim_test is
+
+  SUBTYPE t_import_lead_rec is siebel.cx_import_lead_tst%ROWTYPE;
+  TYPE t_import_lead_tbl IS table of siebel.cx_import_lead_tst%ROWTYPE;
+  
+  TYPE t_import_lead_ref_cur IS REF CURSOR RETURN siebel.cx_import_lead_1%ROWTYPE;
+  
+  pool_name          VARCHAR2(255);
+  status             VARCHAR2(255) ;
+  par_product_code   VARCHAR2(255) ;
+  product_code       VARCHAR2(255) ;
+  tarif              VARCHAR2(255) ;
+  card_type          VARCHAR2(255);
+  cur                VARCHAR2(255) ;
+  amount             VARCHAR2(255) ;
+  srok               VARCHAR2(255) ;
+  procent            VARCHAR2(255) ;
+  insurance_code     VARCHAR2(255) ;
+  card_num           VARCHAR2(255) ;
+  sks                VARCHAR2(255) ;
+  start_date         VARCHAR2(255);
+  finish_date        VARCHAR2(255);
+  kc_date            VARCHAR2(255);
+  con_email          VARCHAR2(255) ;
+  con_phone          VARCHAR2(255) ;
+  x_cannel_sales     VARCHAR2(255) ;
+  x_month_pay        VARCHAR2(255) ;
+  x_rate_insurance_n VARCHAR2(255) ;
+  message_text       VARCHAR2(255) ;
+  service_code       VARCHAR2(255) ;
+  card_category_code VARCHAR2(255) ;
+  interest_charged   VARCHAR2(255) ;
+
+  function fn_eim_gen_rec(con_id_cursor IN sys_refcursor)
+    RETURN pkg_eim_test.t_import_lead_tbl
+    PIPELINED
+    PARALLEL_ENABLE(PARTITION con_id_cursor BY ANY);
+    
+  function fn_get_rows
+    RETURN pkg_eim_test.t_import_lead_tbl
+    PIPELINED;
+              
+  procedure pr_eim_gen_rec(cnt IN pls_integer default 0);
+end pkg_eim_test;
+/
+
+CREATE OR REPLACE PACKAGE BODY SIEBEL.pkg_eim_test AS
+
+function fn_get_rows
+RETURN pkg_eim_test.t_import_lead_tbl PIPELINED
+is
+  con_id siebel.s_contact.row_id%TYPE;
+  l_row t_import_lead_rec;
+  v_tmp pls_integer;
+BEGIN
+  FOR rec IN (
+    SELECT row_id FROM SIEBEL.s_contact@CRM8_TEST_LINK c where rownum < 100000
+  )
+  LOOP
+    l_row.CON_ID := rec.row_id;
+    PIPE ROW (l_row);
+  END LOOP;
+  RETURN;
+END fn_get_rows;
+
+function fn_eim_gen_rec(
+  con_id_cursor IN sys_refcursor
+)
+RETURN pkg_eim_test.t_import_lead_tbl PIPELINED
+PARALLEL_ENABLE (PARTITION con_id_cursor BY ANY)
+is
+  con_id siebel.s_contact%ROWTYPE;
+  t t_import_lead_rec;
+  v_tmp pls_integer;
+begin
+  v_tmp := siebel.seq_import_lead.nextval;
+  LOOP
+    FETCH con_id_cursor
+      INTO t.con_id;
+    EXIT WHEN con_id_cursor%NOTFOUND;
+      t.con_id :=  t.con_id || '111';
+      pipe row(t);
+  end loop;
+  close con_id_cursor;
+  return;
+END fn_eim_gen_rec;
+
+procedure pr_eim_gen_rec(cnt IN pls_integer default 0) is
+  v_max pls_integer;
+begin
+  dbms_output.put_line('BEGIN '||sys_context('userenv', 'sid'));
+  dbms_output.put_line(to_char(sysdate, 'dd.mm.yyyy hh24:mi:ss') || ' ' || 'Initialization local param');
+  begin
+    select pool_name    into pool_name from SIEBEL.cx_import_lead   where rownum = 1;
+    select status into status from SIEBEL.cx_import_lead where rownum = 1;
+    select par_product_code    into par_product_code    from SIEBEL.cx_import_lead   where rownum = 1;
+    select product_code    into product_code    from SIEBEL.cx_import_lead   where rownum = 1;
+    select tarif into tarif from SIEBEL.cx_import_lead where rownum = 1;
+    select card_type    into card_type    from SIEBEL.cx_import_lead   where rownum = 1;
+    select cur into cur from SIEBEL.cx_import_lead where rownum = 1;
+    select amount into amount from SIEBEL.cx_import_lead where rownum = 1;
+    select srok into srok from SIEBEL.cx_import_lead where rownum = 1;
+    select procent into procent from SIEBEL.cx_import_lead where rownum = 1;
+    select insurance_code    into insurance_code    from SIEBEL.cx_import_lead   where rownum = 1;
+    select card_num    into card_num    from SIEBEL.cx_import_lead   where rownum = 1;
+    select sks into sks from SIEBEL.cx_import_lead where rownum = 1;
+    select start_date    into start_date    from SIEBEL.cx_import_lead   where rownum = 1;
+    select finish_date    into finish_date    from SIEBEL.cx_import_lead   where rownum = 1;
+    select kc_date into kc_date from SIEBEL.cx_import_lead where rownum = 1;
+    select con_email    into con_email    from SIEBEL.cx_import_lead   where rownum = 1;
+    select con_phone    into con_phone    from SIEBEL.cx_import_lead   where rownum = 1;
+    select x_cannel_sales    into x_cannel_sales    from SIEBEL.cx_import_lead   where rownum = 1;
+    select x_month_pay    into x_month_pay    from SIEBEL.cx_import_lead   where rownum = 1;
+    select x_rate_insurance_n    into x_rate_insurance_n    from SIEBEL.cx_import_lead   where rownum = 1;
+    select message_text    into message_text    from SIEBEL.cx_import_lead   where rownum = 1;
+    select service_code    into service_code    from SIEBEL.cx_import_lead   where rownum = 1;
+    select card_category_code    into card_category_code    from SIEBEL.cx_import_lead   where rownum = 1;
+    select interest_charged    into interest_charged    from SIEBEL.cx_import_lead   where rownum = 1;
+  exception
+    when others then
+      raise_application_error(-20000, 'Нет данных в таблице cx_import_lead');
+  end;
+    
+  for rec in (select * from user_sequences s where s.SEQUENCE_NAME = upper('seq_import_lead')) loop
+    select max(x_unique_code) into v_max from s_lead;
+    v_max := v_max + 1;
+    execute immediate 'drop sequence siebel.'||rec.sequence_name;
+    execute immediate 'create sequence '||rec.sequence_name||' minvalue '|| v_max ||' increment by 1';
+    --execute immediate 'alter sequence :1 cache :2' using rec.sequence_name, cnt;
+    dbms_output.put_line('Пересоздан сикввенс '||rec.sequence_name||' c minvalue = '||v_max);
+  end loop;
+  
+  EXECUTE IMMEDIATE 'truncate table siebel.cx_import_lead';
+  EXECUTE IMMEDIATE 'ALTER SESSION ENABLE PARALLEL DML';
+  EXECUTE IMMEDIATE 'alter table siebel.cx_import_lead parallel';
+  
+  dbms_output.put_line(to_char(sysdate, 'dd.mm.yyyy hh24:mi:ss') || ' ' || 'Start generation records');
+  
+  insert /*+ append */
+    into cx_import_lead l
+  select *
+    from TABLE(pkg_eim_test.fn_eim_gen_rec(CURSOR
+                                           (SELECT /*+ parallel(c) */
+                                                   row_id
+                                              FROM SIEBEL.s_contact c)))
+   where rownum < cnt + 1;
+  dbms_output.put_line(to_char(sysdate, 'dd.mm.yyyy hh24:mi:ss') || ' ' || 'End generation records');
+  commit;
+  dbms_output.put_line('END '||sys_context('userenv', 'sid'));
+end pr_eim_gen_rec;
+
+END pkg_eim_test;
+/
